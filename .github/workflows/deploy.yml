@@ -33,7 +33,9 @@ jobs:
     # OPTIONAL: Deploy to a real Kubernetes cluster using KUBECONFIG secret
     - name: Set up kubeconfig
       if: ${{ env.KUBECONFIG_CONTENTS != '' }}
-      run: echo "$KUBECONFIG_CONTENTS" | base64 --decode > ~/.kube/config
+      run: |
+        mkdir -p ~/.kube  # Create the directory if it doesn't exist
+        echo "$KUBECONFIG_CONTENTS" | base64 --decode > ~/.kube/config
       env:
         KUBECONFIG_CONTENTS: ${{ secrets.KUBECONFIG }}
 
