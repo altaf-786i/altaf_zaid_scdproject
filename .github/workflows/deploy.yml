@@ -38,14 +38,14 @@ jobs:
         KUBECONFIG_CONTENTS: ${{ secrets.KUBECONFIG }}
 
     - name: Deploy to Kubernetes Cluster
-      if: secrets.KUBECONFIG != ''
+      if: ${{ env.KUBECONFIG_CONTENTS != '' }}
       run: |
         kubectl apply -f k8s/using-local-mongodb/database/
         kubectl apply -f k8s/using-local-mongodb/backend/
         kubectl apply -f k8s/using-local-mongodb/frontend/
 
     - name: Check Deployment Status
-      if: secrets.KUBECONFIG != ''
+      if: ${{ env.KUBECONFIG_CONTENTS != '' }}
       run: |
         kubectl get pods -o wide
         kubectl get services -o wide
