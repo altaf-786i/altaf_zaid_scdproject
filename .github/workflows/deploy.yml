@@ -1,4 +1,4 @@
-name: Build and Deploy to Minikube
+name: Build and Deploy to Kubernetes
 
 on:
   push:
@@ -13,40 +13,39 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Set up Docker to use Minikube's environment
-      run: |
-        echo "Configuring Docker to use Minikube's daemon..."
-        eval $(minikube docker-env)  # Configure Docker to talk to Minikube
-        minikube start --driver=docker  # Start Minikube (if not already started)
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
 
-    - name: Build Docker images
+    - name: Login to Docker Hub
       run: |
-        echo "Building Docker images..."
-        docker build -t mern-app-backend:latest ./backend
-        docker build -t mern-app-frontend:latest ./book_store
+        echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-    - name: Push Docker images to Docker Hub
+    - name: Build and push backend image
       run: |
-        echo "Pushing Docker images to Docker Hub..."
-        docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-        docker tag mern-app-backend:latest ${{ secrets.DOCKER_USERNAME }}/mern-app-backend:latest
-        docker tag mern-app-frontend:latest ${{ secrets.DOCKER_USERNAME }}/mern-app-frontend:latest
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/mern-app-backend:latest ./backend
         docker push ${{ secrets.DOCKER_USERNAME }}/mern-app-backend:latest
+
+    - name: Build and push frontend image
+      run: |
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/mern-app-frontend:latest ./book_store
         docker push ${{ secrets.DOCKER_USERNAME }}/mern-app-frontend:latest
 
-    - name: Set Kubernetes context to Minikube
+    # OPTIONAL: Deploy to a real Kubernetes cluster using KUBECONFIG secret
+    - name: Set up Kubeconfig
+      if: secrets.KUBECONFIG != ''
       run: |
-        echo "Setting Kubernetes context to Minikube..."
-        kubectl config use-context minikube
+        mkdir -p ~/.kube
+        echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
 
-    - name: Deploy to Minikube
+    - name: Deploy to Kubernetes Cluster
+      if: secrets.KUBECONFIG != ''
       run: |
-        echo "Deploying to Minikube..."
         kubectl apply -f k8s/using-local-mongodb/database/
         kubectl apply -f k8s/using-local-mongodb/backend/
         kubectl apply -f k8s/using-local-mongodb/frontend/
 
-    - name: Check Minikube Deployment Status
+    - name: Check Deployment Status
+      if: secrets.KUBECONFIG != ''
       run: |
-        kubectl get pods -o wide  # Check status of pods
-        kubectl get services -o wide  # Check if services are exposed correctly
+        kubectl get pods -o wide
+        kubectl get services -o wide
