@@ -31,11 +31,11 @@ jobs:
         docker push ${{ secrets.DOCKER_USERNAME }}/mern-app-frontend:latest
 
     # OPTIONAL: Deploy to a real Kubernetes cluster using KUBECONFIG secret
-    - name: Set up Kubeconfig
-      if: secrets.KUBECONFIG != ''
-      run: |
-        mkdir -p ~/.kube
-        echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+    - name: Set up kubeconfig
+      if: ${{ env.KUBECONFIG_CONTENTS != '' }}
+      run: echo "$KUBECONFIG_CONTENTS" | base64 --decode > ~/.kube/config
+      env:
+        KUBECONFIG_CONTENTS: ${{ secrets.KUBECONFIG }}
 
     - name: Deploy to Kubernetes Cluster
       if: secrets.KUBECONFIG != ''
