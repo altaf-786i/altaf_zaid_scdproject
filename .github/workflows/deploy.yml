@@ -30,7 +30,6 @@ jobs:
         docker build -t ${{ secrets.DOCKER_USERNAME }}/mern-app-frontend:latest ./book_store
         docker push ${{ secrets.DOCKER_USERNAME }}/mern-app-frontend:latest
 
-    # OPTIONAL: Deploy to a real Kubernetes cluster using KUBECONFIG secret
     - name: Set up kubeconfig
       if: ${{ secrets.KUBECONFIG != '' }}
       run: |
