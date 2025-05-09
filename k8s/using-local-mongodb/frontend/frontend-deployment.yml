@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: my-react-app
-          image: altaf2519/mern-app-frontend:1.0
+          image: altaf2519/mern-app-frontend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 80

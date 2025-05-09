@@ -3,4 +3,4 @@ kind: ConfigMap
 metadata:
   name: mongo-config
 data:
-  mongo-url: "mongodb://i222519:altaf@mongodb:27017"
+  mongo-url: "mongodb+srv://i222519:altaf@cluster0.qnkpnlz.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"

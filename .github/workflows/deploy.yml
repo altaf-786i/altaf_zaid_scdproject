@@ -1,0 +1,34 @@
+name: Build and Deploy to Minikube
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-deploy:
+    runs-on: self-hosted
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Docker to use Minikube's environment
+      run: |
+        echo "Configuring Docker to use Minikube's daemon..."
+        eval $(minikube docker-env)
+        minikube start
+
+    - name: Build Docker images
+      run: |
+        docker build -t mern-app-backend:latest ./backend
+        docker build -t mern-app-frontend:latest ./book_store
+
+    - name: Set Kubernetes context to Minikube
+      run: |
+        kubectl config use-context minikube
+
+    - name: Deploy to Minikube
+      run: |
+        kubectl apply -f k8s/using-local-mongodb/database/
+        kubectl apply -f k8s/using-local-mongodb/backend/
+        kubectl apply -f k8s/using-local-mongodb/frontend/
